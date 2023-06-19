@@ -48,13 +48,34 @@ jobs:
       - name: Setup Meson
         run: |
           sccache --version
-          meson setup build `
-            --wrap-mode=forcefallback `
-            --buildtype=release `
-            -Dglib=enabled `
-            -Dfreetype=enabled `
-            -Dgdi=enabled `
-            -Ddirectwrite=enabled
+
+          attempts=1
+          timeout=1
+          echo "HERE WE GO!"
+          # For Windows, meson downloads a source tarball. The endpoint is flaky, so we
+          # need to wrap this in a retry loop.
+          while [ $attempts -lt 5 ]; do
+            echo "------>>><<<--------"
+            echo "ATTEMPTS: $attempts"
+            echo "TIMEOUT: $timeout"
+
+            meson setup build `
+              --wrap-mode=forcefallback `
+              --buildtype=release `
+              -Dglib=enabled `
+              -Dfreetype=enabled `
+              -Dgdi=enabled `
+              -Ddirectwrite=enabled
+
+            if [$? -eq 0]; then
+              break
+            fi
+
+            echo "Setup failed, trying again with delay"
+            sleep $timeout
+            timeout=$timeout * 2
+          done
+
       - name: Build
         run: meson compile -Cbuild
       - name: Test
