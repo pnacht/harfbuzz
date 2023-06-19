@@ -49,12 +49,13 @@ jobs:
         run: |
           sccache --version
 
-          attempts=1
-          timeout=1
+          $attempts=1
+          $timeout=1
           echo "HERE WE GO!"
           # For Windows, meson downloads a source tarball. The endpoint is flaky, so we
           # need to wrap this in a retry loop.
-          while [ $attempts -lt 5 ]; do
+          while ($attempts -le 5 )
+          {
             echo "------>>><<<--------"
             echo "ATTEMPTS: $attempts"
             echo "TIMEOUT: $timeout"
@@ -67,14 +68,16 @@ jobs:
               -Dgdi=enabled `
               -Ddirectwrite=enabled
 
-            if [$? -eq 0]; then
+            if ($LASTEXITCODE -eq 0)
+            {
               break
-            fi
+            }
 
             echo "Setup failed, trying again with delay"
-            sleep $timeout
-            timeout=$timeout * 2
-          done
+            Start-Sleep -Seconds $timeout
+            $timeout=$timeout * 2
+            $attempts++
+          }
 
       - name: Build
         run: meson compile -Cbuild
