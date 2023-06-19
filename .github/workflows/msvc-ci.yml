@@ -2,9 +2,9 @@ name: msvc
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -27,35 +27,35 @@ jobs:
     name: ${{ matrix.name }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3.5.1
-    - name: Setup Ccache
-      uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
-      with:
-        variant: sccache
-        key: ${{ github.job }}-${{ matrix.os }}-${{ matrix.ARCH }}
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-    - name: Setup MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch : ${{ matrix.ARCH }}
-    - name: Install Python Dependencies
-      run: |
-        pip install --upgrade meson ninja fonttools
-    - name: Setup Meson
-      run: |
-        sccache --version
-        meson setup build `
-          --wrap-mode=forcefallback `
-          --buildtype=release `
-          -Dglib=enabled `
-          -Dfreetype=enabled `
-          -Dgdi=enabled `
-          -Ddirectwrite=enabled
-    - name: Build
-      run: meson compile -Cbuild
-    - name: Test
-      run: meson test --print-errorlogs --suite=harfbuzz -Cbuild
+      - name: Checkout
+        uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3.5.1
+      - name: Setup Ccache
+        uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+        with:
+          variant: sccache
+          key: ${{ github.job }}-${{ matrix.os }}-${{ matrix.ARCH }}
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.ARCH }}
+      - name: Install Python Dependencies
+        run: |
+          pip install -r .ci/requirements.txt --require-hashes
+      - name: Setup Meson
+        run: |
+          sccache --version
+          meson setup build `
+            --wrap-mode=forcefallback `
+            --buildtype=release `
+            -Dglib=enabled `
+            -Dfreetype=enabled `
+            -Dgdi=enabled `
+            -Ddirectwrite=enabled
+      - name: Build
+        run: meson compile -Cbuild
+      - name: Test
+        run: meson test --print-errorlogs --suite=harfbuzz -Cbuild
