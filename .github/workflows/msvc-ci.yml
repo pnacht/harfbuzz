@@ -44,7 +44,7 @@ jobs:
           arch: ${{ matrix.ARCH }}
       - name: Install Python Dependencies
         run: |
-          pip install -r .ci/requirements.txt
+          pip install -r .ci/requirements.txt --require-hashes
       - name: Setup Meson
         run: |
           sccache --version
