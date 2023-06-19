@@ -2,10 +2,10 @@ name: linux-ci
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     tags: ["*.*.*"]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -15,57 +15,57 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3.5.1
-    - name: Setup Ccache
-      uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
-      with:
-        key: ${{ github.job }}-${{ runner.os }}-${{ runner.arch }}
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install \
-          gcc \
-          gobject-introspection \
-          gtk-doc-tools \
-          libcairo2-dev \
-          libfreetype6-dev \
-          libgirepository1.0-dev \
-          libglib2.0-dev \
-          libgraphite2-dev \
-          libicu-dev \
-          ninja-build \
-          pkg-config \
-          python3 \
-          python3-setuptools
-    - name: Install Python Dependencies
-      run: sudo pip3 install -r .ci/requirements.txt --require-hashes
-    - name: Setup Meson
-      run: |
-        ccache --version
-        meson setup build \
-          -Dauto_features=enabled \
-          -Dchafa=disabled \
-          -Dgraphite=enabled \
-          -Doptimization=2 \
-          -Db_coverage=true \
-          -Ddoc_tests=true \
-          -Dragel_subproject=true
-    - name: Build
-      run: meson compile -Cbuild
-    - name: Test
-      run: meson test --print-errorlogs -Cbuild
-    - name: Generate Documentations
-      run: ninja -Cbuild harfbuzz-doc
-    - name: Deploy Documentations
-      if: github.ref_type == 'tag'
-      run: .ci/deploy-docs.sh
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        REVISION: ${{ github.sha }}
-    - name: Generate Coverage
-      run: ninja -Cbuild coverage-xml
-    - name: Upload Coverage
-      uses: codecov/codecov-action@894ff025c7b54547a9a2a1e9f228beae737ad3c2 # v3.1.3
-      with:
-        file: build/meson-logs/coverage.xml
+      - name: Checkout
+        uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3.5.1
+      - name: Setup Ccache
+        uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+        with:
+          key: ${{ github.job }}-${{ runner.os }}-${{ runner.arch }}
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install \
+            gcc \
+            gobject-introspection \
+            gtk-doc-tools \
+            libcairo2-dev \
+            libfreetype6-dev \
+            libgirepository1.0-dev \
+            libglib2.0-dev \
+            libgraphite2-dev \
+            libicu-dev \
+            ninja-build \
+            pkg-config \
+            python3 \
+            python3-setuptools
+      - name: Install Python Dependencies
+        run: sudo pip3 install -r .ci/requirements.txt
+      - name: Setup Meson
+        run: |
+          ccache --version
+          meson setup build \
+            -Dauto_features=enabled \
+            -Dchafa=disabled \
+            -Dgraphite=enabled \
+            -Doptimization=2 \
+            -Db_coverage=true \
+            -Ddoc_tests=true \
+            -Dragel_subproject=true
+      - name: Build
+        run: meson compile -Cbuild
+      - name: Test
+        run: meson test --print-errorlogs -Cbuild
+      - name: Generate Documentations
+        run: ninja -Cbuild harfbuzz-doc
+      - name: Deploy Documentations
+        if: github.ref_type == 'tag'
+        run: .ci/deploy-docs.sh
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          REVISION: ${{ github.sha }}
+      - name: Generate Coverage
+        run: ninja -Cbuild coverage-xml
+      - name: Upload Coverage
+        uses: codecov/codecov-action@894ff025c7b54547a9a2a1e9f228beae737ad3c2 # v3.1.3
+        with:
+          file: build/meson-logs/coverage.xml
